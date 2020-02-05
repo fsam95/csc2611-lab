@@ -12,6 +12,7 @@ from collections import Counter
 import pandas as pd
 
 from pkl_io import save_pkl, load_pkl
+from plotting import plot_correlation
 
 def cos(vA,vB):
     """
@@ -40,7 +41,7 @@ def build_word_context_matrix(words_to_use, bigram_count):
 
 def calculate_pmi_matrix(wc_matrix): 
     total_count = wc_matrix.sum() # scalar
-    word_count = wc_matrix.sum(axis = 1) # 5000 dim vector of word counts 
+    word_count = wc_matrix.sum(axis = 0) # 5000 dim vector of word counts 
     # context_count = wc_matrix.sum(axis = 0) # 5000 dim vector of context counts
     prob_matrix = total_count * ((wc_matrix / word_count[:, np.newaxis]) / word_count)
     prob_matrix[prob_matrix == np.inf] = 0
@@ -62,8 +63,6 @@ def get_words_from_rg_also_in_brown(rg_df, brown_words, top_n_words):
         if (word not in top_n_words_set) and (word in unique_brown_words):
             rg_also_in_brown.append(word)
     return rg_also_in_brown
-
-
 
 def get_bigram_conditional_prob_brown():
     words = lower_cased_brown_words()
@@ -121,16 +120,24 @@ def compute_pca_matrix(ppmi_matrix, dimensions):
     return pca_transformed
 
 def get_words_in_rg_and_wc(word_mapping):
-    synonymy_pd = pd.read_csv('synonymy.csv')
+    sword_4ynonymy_pd = pd.read_csv('synonymy.csv')
     both = synonymy_pd.loc[synonymy_pd['word_1'].isin(word_mapping) & synonymy_pd['word_2'].isin(word_mapping)]
     return both
 
 def compute_correlation(pair_sim_df, pca_matrix, word_index_map):
     calculate_cos = lambda word_one, word_two: cos(pca_matrix[word_index_map[word_one]], pca_matrix[word_index_map[word_two]])
-    pair_sim_df['cos'] = pair_sim_df[['word_1', 'word_2']].apply(lambda words: calculate_cos(words[0], words[1]), axis=1)
-    print(pearsonr(pair_sim_df['similarity'], pair_sim_df['cos']))
+    pair_sim_df['lsa sim'] = pair_sim_df[['word_1', 'word_2']].apply(lambda words: calculate_cos(words[0], words[1]), axis=1)
+    print(pearsonr(pair_sim_df['similarity'], pair_sim_df['lsa sim']))
+    plot_correlation(pair_sim_df, 'lsa sim', 'similarity', 'lsa_correlation')
+
     # print(pair_sim_df)
 
+def get_words_in_W():
+    words = lower_cased_brown_words()
+    most_frequent_words = n_most_frequent_words(words)
+    rg_df = pd.read_csv('synonymy.csv')
+    words_from_rg_also_in_brown = get_words_from_rg_also_in_brown(rg_df, words, most_frequent_words)
+    return set(most_frequent_words + words_from_rg_also_in_brown)
 
 def main(args):
     if args.build_wc_matrix:
@@ -169,15 +176,12 @@ def main(args):
     elif args.compute_correlation:
         word_index_map = load_pkl('word_index_mapping')
         rg_sim_df = load_pkl('rg_sim_values')
-        pca_ten = load_pkl('pca_ten')
-        compute_correlation(rg_sim_df, pca_ten, word_index_map)
-        pca_hundred = load_pkl('pca_hundred')
-        compute_correlation(rg_sim_df, pca_hundred, word_index_map)
+        # pca_ten = load_pkl('pca_ten')
+        # compute_correlation(rg_sim_df, pca_ten, word_index_map)
+        # pca_hundred = load_pkl('pca_hundred')
+        # compute_correlation(rg_sim_df, pca_hundred, word_index_map)
         pca_three_hundred = load_pkl('pca_three_hundred')
         compute_correlation(rg_sim_df, pca_three_hundred, word_index_map)
-
-
-
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
@@ -187,7 +191,3 @@ if __name__ == '__main__':
     argparser.add_argument('--get_words_in_rg_and_wc_matrix', action='store_true')
     argparser.add_argument('--compute_correlation', action='store_true')
     main(argparser.parse_args())
-    # sentences = brown.words()
-    # print(bigram_dist[('went', 'to')])
-
-    # for sent in sentences:
