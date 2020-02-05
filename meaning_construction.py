@@ -120,7 +120,7 @@ def compute_pca_matrix(ppmi_matrix, dimensions):
     return pca_transformed
 
 def get_words_in_rg_and_wc(word_mapping):
-    sword_4ynonymy_pd = pd.read_csv('synonymy.csv')
+    synonymy_pd = pd.read_csv('synonymy.csv')
     both = synonymy_pd.loc[synonymy_pd['word_1'].isin(word_mapping) & synonymy_pd['word_2'].isin(word_mapping)]
     return both
 

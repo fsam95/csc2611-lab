@@ -1,3 +1,4 @@
+import pandas as pd
 from pkl_io import load_pkl
 def _load_synonymy():
     synonymy_df = pd.read_csv('synonymy.csv')

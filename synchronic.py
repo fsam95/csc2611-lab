@@ -54,14 +54,12 @@ def _compute_accuracy(df, label, semantic):
 
 def do_analogy_test_lsa():
     candidate_words = get_words_in_W()
-    # save_pkl('analogy_data', df)
-    # df = read_analogy_file(get_words_in_W())
     df = load_pkl('analogy_data')
     compute_lsa_analogy(df, candidate_words)
 
-    lsa_semantic_accuracy = _compute_accuracy(df, True)
+    lsa_semantic_accuracy = _compute_accuracy(df, 'lsa_correct', True)
     print("LSA semantic analogy accuracy: {}".format(lsa_semantic_accuracy))
-    lsa_syntactic_accuracy = _compute_accuracy(df, False)
+    lsa_syntactic_accuracy = _compute_accuracy(df, 'lsa_correct', False)
     print("LSA syntactic analogy accuracy: {}".format(lsa_syntactic_accuracy))
 
 def compute_w2v_analogy(model, analogy_df, candidate_words):
@@ -82,22 +80,23 @@ def compute_w2v_analogy(model, analogy_df, candidate_words):
 
 def do_analogy_test_w2v():
     candidate_words = get_words_in_W()
-    # save_pkl('analogy_data', df)
-    # df = read_analogy_file(get_words_in_W())
-    df = load_pkl('analogy_data')
+    df = read_analogy_file(get_words_in_W())
+    save_pkl('analogy_data', df)
     print("Number of semantic analogy test examples: {}".format(len(df.loc[df['is_semantic'] == True])))
     print("Number of syntactic analogy test examples: {}".format(len(df.loc[df['is_semantic'] == False])))
-    # model = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True, limit=1000000)
-    # compute_w2v_analogy(model, df, candidate_words)
-    # w2v_semantic_accuracy = _compute_accuracy(df, 'w2v_correct', True)
-    # print("w2v semantic analogy accuracy: {}".format(w2v_semantic_accuracy))
-    # w2v_syntactic_accuracy = _compute_accuracy(df, 'w2v_correct', False)
-    # print("w2v syntactic analogy accuracy: {}".format(w2v_syntactic_accuracy))
+    model = KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True, limit=1000000)
+    compute_w2v_analogy(model, df, candidate_words)
+    w2v_semantic_accuracy = _compute_accuracy(df, 'w2v_correct', True)
+    print("w2v semantic analogy accuracy: {}".format(w2v_semantic_accuracy))
+    w2v_syntactic_accuracy = _compute_accuracy(df, 'w2v_correct', False)
+    print("w2v syntactic analogy accuracy: {}".format(w2v_syntactic_accuracy))
 
 def main(args):
     if args.do_analogy_test:
-        # do_analogy_test_lsa()
         do_analogy_test_w2v()
+        do_analogy_test_lsa()
+    elif args.compute_w2v_sim:
+        get_rg_word_vectors()
     
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()

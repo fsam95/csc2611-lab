@@ -37,8 +37,9 @@ def method_one_cos_dist(embedding_matrix, word_index_map):
         change = eval_change_for_word(embedding_matrix, index, word, 0, 9)
         semantic_change_vals.append((word, change)) 
     sorted_semantic_change_vals = sorted(semantic_change_vals, key=lambda x: x[1])
-    print("Most changing words: {}\n".format(sorted_semantic_change_vals[0:20]))
-    print("Least changing words: {}".format(sorted_semantic_change_vals[-20:]))
+    words_only = lambda all_sem_change_vals: [change_word[0] for change_word in all_sem_change_vals]
+    print("Most changing words: {}\n".format(words_only(sorted_semantic_change_vals[0:20])))
+    print("Least changing words: {}".format(words_only(sorted_semantic_change_vals[-20:])))
     return sorted_semantic_change_vals
 
 def method_two_neighbour_centroid(embedding_matrix, word_index_map):
@@ -52,8 +53,11 @@ def method_two_neighbour_centroid(embedding_matrix, word_index_map):
         change = cos(centroid_start_decade, centroid_end_decade)
         semantic_change_vals.append((word, change))
     sorted_semantic_change_vals = sorted(semantic_change_vals, key=lambda x: x[1])
-    print("Most changing words: {}\n".format(sorted_semantic_change_vals[0:20]))
-    print("Least changing words: {}".format(sorted_semantic_change_vals[-20:]))
+    words_only = lambda all_sem_change_vals: [change_word[0] for change_word in all_sem_change_vals]
+    print("Most changing words: {}\n".format(words_only(sorted_semantic_change_vals[0:20])))
+    print("Least changing words: {}".format(words_only(sorted_semantic_change_vals[-20:])))
+    # print("Most changing words: {}\n".format(sorted_semantic_change_vals[0:20]))
+    # print("Least changing words: {}".format(sorted_semantic_change_vals[-20:]))
     return sorted_semantic_change_vals
 
 def method_three_neighbourhood_density(embedding_matrix, word_index_map):
@@ -88,8 +92,11 @@ def method_three_neighbourhood_density(embedding_matrix, word_index_map):
         change = abs(density_for_end_decade - density_for_start_decade)
         semantic_change_vals.append((word, change))
     sorted_semantic_change_vals = sorted(semantic_change_vals, key=lambda x: x[1], reverse=True)
-    print("Most changing words: {}\n".format(sorted_semantic_change_vals[0:20]))
-    print("Least changing words: {}".format(sorted_semantic_change_vals[-20:]))
+    # print("Most changing words: {}\n".format(sorted_semantic_change_vals[0:20]))
+    # print("Least changing words: {}".format(sorted_semantic_change_vals[-20:]))
+    words_only = lambda all_sem_change_vals: [change_word[0] for change_word in all_sem_change_vals]
+    print("Most changing words: {}\n".format(words_only(sorted_semantic_change_vals[0:20])))
+    print("Least changing words: {}".format(words_only(sorted_semantic_change_vals[-20:])))
     return sorted_semantic_change_vals
     
 def calculate_mean_change(embedding_matrix, t, word_index_map):
@@ -159,22 +166,19 @@ def main(args):
         embedding_matrix = load_embedding_matrix()
         get_change = lambda change_results: [word_change[1] for word_change in change_results]
         method_1_sorted_change = method_one_cos_dist(embedding_matrix, word_index_map)
-        print(len(method_1_sorted_change))
         method_2_sorted_change = method_two_neighbour_centroid(embedding_matrix, word_index_map)
-        print(len(method_2_sorted_change))
-
-        print("Method 1 and 2 correlation: {}".format(pearsonr(get_change(method_1_sorted_change), get_change(method_2_sorted_change))))
         method_3_sorted_change = method_three_neighbourhood_density(embedding_matrix, word_index_map)
 
+        print("Method 1 and 2 correlation: {}".format(pearsonr(get_change(method_1_sorted_change), get_change(method_2_sorted_change))))
+
         print("Method 1 and 3 correlation: {}".format(pearsonr(get_change(method_1_sorted_change), get_change(method_3_sorted_change))))
-        method_results = [method_1_sorted_change, method_2_sorted_change, method_3_sorted_change]
 
         print("Method 2 and 3 correlation: {}".format(pearsonr(get_change(method_2_sorted_change), get_change(method_3_sorted_change))))
         # print("Method 1 and 2 correlation".format(spearmanr(get_change(method_1_sorted_change), get_change(method_2_sorted_change))))
     elif args.changepoint_detection:
         word_index_map = load_embedding_index()
         embedding_matrix = load_embedding_matrix()
-        changepoint_detection(embedding_matrix, word_index_map, ['programs', 'objectives', 'computer', 'radio'])
+        changepoint_detection(embedding_matrix, word_index_map, ['techniques', 'skills', 'mcgraw'])
         
 
 if __name__ == '__main__':
